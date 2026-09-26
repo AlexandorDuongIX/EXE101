@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Rounded, Shadows } from '@/constants/theme';
 import {
@@ -128,7 +129,13 @@ export default function LoginScreen() {
 
   const handleVerifyOTP = (otpCode: string) => {
     setIsOtpModalOpen(false);
-    Alert.alert('Thành công', `Đăng nhập thành công vào KithCare với mã ${otpCode}!`);
+    // Navigate to the appropriate home screen based on role
+    if (role === 'senior') {
+      router.replace('/senior-home');
+    } else {
+      // TODO: navigate to family/caregiver home
+      Alert.alert('Thành công', `Đăng nhập thành công vào KithCare với mã ${otpCode}!`);
+    }
   };
 
   return (

@@ -7,3 +7,7 @@ export * from './chip';
 export * from './app-icon';
 export * from './social-icons';
 export * from './icons';
+export * from './avatar';
+export * from './status-badge';
+export * from './section-header';
+export * from './senior-icons';
