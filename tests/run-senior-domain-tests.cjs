@@ -10,7 +10,6 @@ const ts = require('typescript');
 const projectRoot = path.resolve(__dirname, '..');
 const outputRoot = path.join(projectRoot, '.expo', 'senior-domain-tests');
 const sourceFiles = [
-  'src/config/demo-flags.ts',
   'src/models/auth/types.ts',
   'src/models/auth/demo-auth-service.ts',
   'src/controllers/auth/login-destination.ts',

@@ -83,7 +83,7 @@ function CreateSeniorForm() {
               onPress={leaveForm}
               disabled={disabled}
               accessibilityRole="button"
-              accessibilityLabel="Quay lại trang quản lý người thân"
+              accessibilityLabel="Quay lại trang chủ gia đình"
               accessibilityState={{ disabled }}
               style={[styles.backButton, disabled && styles.disabled]}
             >
@@ -372,7 +372,7 @@ function CreateSeniorForm() {
                 titleColor={palette.primary}
                 style={{ borderColor: palette.border }}
                 accessibilityRole="button"
-                accessibilityLabel="Để sau và quay lại trang quản lý người thân"
+                accessibilityLabel="Để sau và quay lại trang chủ gia đình"
                 accessibilityState={{ disabled }}
               />
             </View>

@@ -11,22 +11,29 @@ src/
 │   ├── _layout.tsx
 │   ├── index.tsx
 │   ├── (auth)/login.tsx
-│   ├── (family)/{family-home,create-senior}.tsx
-│   ├── (senior)/senior-home.tsx
+│   ├── (family)/create-senior.tsx
+│   ├── (family)/(tabs)/{family-home,family-medications,add-more-senior}.tsx
+│   ├── (senior)/link-senior.tsx
+│   ├── (senior)/(tabs)/{senior-home,senior-medications}.tsx
 │   └── (examples)/explore.tsx
 ├── models/
 │   ├── auth/                  # Session, xác thực demo, xử lý số điện thoại
-│   └── seniors/               # Hồ sơ, validation, repository, tâm trạng, thuốc
+│   ├── seniors/               # Hồ sơ, validation, repository
+│   ├── linking/               # Mã liên kết tài khoản–hồ sơ
+│   ├── schedules/             # Lịch thuốc và lịch khám
+│   └── health/                # Số đo, triệu chứng, biểu đồ, lịch chăm sóc trên Home
 ├── controllers/
 │   ├── auth/                  # AuthProvider, đăng nhập, OTP, chọn route
 │   ├── family/                # State và thao tác trang quản lý người thân
-│   └── seniors/               # Hồ sơ, ảnh, trang chủ, tâm trạng, thuốc, gọi nhanh
+│   ├── seniors/               # Hồ sơ, ảnh và điều hướng Senior
+│   ├── linking/               # Liên kết tài khoản với hồ sơ
+│   ├── schedules/             # State và thao tác lịch chăm sóc
+│   └── health/                # Dữ liệu sức khỏe chia sẻ, Home và ghi nhận
 ├── views/
 │   ├── screens/{auth,family,seniors,examples}/
 │   ├── components/            # UI dùng chung, ui/, senior/
 │   ├── hooks/                 # Theme dùng chung, trạng thái hiển thị khi cuộn
 │   └── styles/                # colors.ts, theme.ts, global.css
-└── config/                    # demo-flags.ts
 
 assets/                        # Hình ảnh, font và tài nguyên tĩnh
 tests/                         # Kiểm thử domain và smoke test trình duyệt
@@ -46,7 +53,6 @@ gốc dự án để Expo và các công cụ đọc đúng vị trí. Các thư
 | Controller | Quản lý state và session; gọi Model; xử lý async, submit, OTP, điều hướng và vòng đời ảnh | `controllers/auth/auth-context.tsx`, `controllers/seniors/senior-context.tsx`, các hook `use-*-controller.ts` |
 | View | Render màn hình/component, style, theme, accessibility; chuyển sự kiện UI cho Controller | `views/screens/seniors/create-senior-screen.tsx`, `views/components/ui/`, `views/hooks/use-theme.ts` |
 | Route | Export View và ghép navigator/provider tại layout | `route/(family)/create-senior.tsx`, `route/_layout.tsx` |
-| Config | Giá trị cấu hình độc lập với UI | `config/demo-flags.ts` |
 
 ```text
 Route → View → Controller → Model
@@ -87,7 +93,7 @@ không có UI hay tạo thêm màn hình trung gian:
 // src/route/(family)/create-senior.tsx
 export { default } from '@/views/screens/seniors/create-senior-screen';
 
-// src/route/(family)/family-home.tsx
+// src/route/(family)/(tabs)/family-home.tsx
 export { default } from '@/views/screens/family/family-home-screen';
 ```
 

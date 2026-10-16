@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Linking } from 'react-native';
 import { router } from 'expo-router';
 
+import { useSeniors } from '@/controllers/seniors/senior-context';
 import { createDemoOtpChallenge } from '@/models/auth/demo-auth-service';
 import { formatPhoneInput, getNormalizedPhone } from '@/models/auth/phone-model';
 import type { UserRole } from '@/models/auth/types';
@@ -18,6 +19,7 @@ export function useLoginController() {
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [loginError, setLoginError] = useState('');
   const { login } = useAuth();
+  const { getProfiles } = useSeniors();
   const pendingChallenge = useRef<ReturnType<typeof createDemoOtpChallenge> | null>(null);
   const verifying = useRef(false);
   const sendTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -95,7 +97,9 @@ export function useLoginController() {
       if (pendingChallenge.current !== challenge) return;
       pendingChallenge.current = null;
       setIsOtpModalOpen(false);
-      const destination = getLoginDestination(account);
+      // Read after login: the live repository filters profiles for the new session.
+      const hasSeniorProfile = account.role === 'family' && getProfiles().length > 0;
+      const destination = getLoginDestination(account, hasSeniorProfile);
       if (destination) {
         router.replace(destination);
       } else {

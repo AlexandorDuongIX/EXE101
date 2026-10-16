@@ -4,14 +4,14 @@
 
 | Nhóm | File thêm hoặc chỉnh sửa |
 | --- | --- |
-| Route | `src/route/(family)/create-senior.tsx`, `src/route/(family)/family-home.tsx`, `src/route/(auth)/login.tsx`, `src/route/index.tsx`, `src/route/_layout.tsx` |
-| View đăng nhập và quản lý người thân | `src/views/screens/auth/login-screen.tsx`, `src/views/screens/family/family-home-screen.tsx` |
+| Route | `src/route/(family)/create-senior.tsx`, `src/route/(family)/(tabs)/family-home.tsx`, `src/route/(family)/(tabs)/add-more-senior.tsx`, `src/route/(auth)/login.tsx`, `src/route/index.tsx`, `src/route/_layout.tsx` |
+| View đăng nhập và quản lý người thân | `src/views/screens/auth/login-screen.tsx`, `src/views/screens/family/family-home-screen.tsx`, `src/views/screens/family/add-more-senior-screen.tsx` |
 | Model xác thực | `src/models/auth/types.ts`, `src/models/auth/demo-auth-service.ts`, `src/models/auth/phone-model.ts` |
 | Controller đăng nhập | `src/controllers/auth/auth-context.tsx`, `login-destination.ts`, `use-login-controller.ts`, `use-otp-controller.ts` |
 | Model hồ sơ Senior | `src/models/seniors/types.ts`, `form-model.ts`, `senior-repository.ts` |
-| Controller hồ sơ và danh sách | `src/controllers/seniors/senior-context.tsx`, `use-create-senior-controller.ts`, `use-senior-avatar-controller.ts`, `senior-avatar-resource.ts`; `src/controllers/family/use-family-home-controller.ts` |
+| Controller hồ sơ và danh sách | `src/controllers/seniors/senior-context.tsx`, `use-create-senior-controller.ts`, `use-senior-avatar-controller.ts`, `senior-avatar-resource.ts`; `src/controllers/family/use-add-more-senior-controller.ts` |
 | View hồ sơ Senior | `src/views/screens/seniors/create-senior-screen.tsx`, `src/views/components/senior/senior-avatar-picker.tsx`, `src/views/styles/colors.ts` |
-| Cấu hình | `src/config/demo-flags.ts`, `app.json`, `package.json`, `package-lock.json` |
+| Cấu hình | `app.json`, `package.json`, `package-lock.json` |
 | Component tái sử dụng | `src/views/components/ui/button.tsx`, `input.tsx`, `chip.tsx`, `checkbox.tsx`; `src/views/components/otp-modal.tsx` |
 | Kiểm thử | `tests/senior-domain.test.ts`, `run-senior-domain-tests.cjs`, `senior-ui.smoke.py`, `serve-web-export.py` |
 | Hướng dẫn | `README.md`, `docs/MVC_ARCHITECTURE.md`, `docs/SENIOR_DEMO.md`, `docs/COLORS.md` |
@@ -25,16 +25,16 @@
   các file route. Các route group không làm thay đổi URL. Người dùng phải chọn loại tài khoản
   demo; `family` là Con cái, `senior` là người cao tuổi, `caregiver` là Điều dưỡng.
 - `src/controllers/auth/use-login-controller.ts` chụp lại số điện thoại và vai trò khi mở OTP. Chỉ callback
-  xác thực thành công gọi `getLoginDestination()`; không có redirect theo cờ demo
+  xác thực thành công gọi `getLoginDestination()`; không có redirect onboarding
   trong effect, refresh, render hoặc chuyển tab.
-- `src/config/demo-flags.ts` chứa
-  `DEMO_FORCE_CREATE_SENIOR_AFTER_CHILD_LOGIN = true`. Đổi thành `false` để đưa
-  Con cái đến `/family-home` sau đăng nhập. Senior vẫn vào `/senior-home`; Điều
-  dưỡng giữ thông báo đăng nhập thành công trên màn đăng nhập hiện có.
-- Demo bật: mỗi lần Con cái đăng nhập thành công đều vào `/create-senior`, kể cả
-  đã có hồ sơ trong phiên. Tạo thành công thay route bằng `/family-home?created=1`,
-  hiện “Đã tạo hồ sơ người thân” và bản ghi vừa tạo. Quay lại/Để sau đến danh sách;
-  thêm hồ sơ khác là hành động chủ động của người dùng.
+- Sau khi xác thực, controller đọc hồ sơ của tài khoản vừa đăng nhập từ repository.
+  Con cái đã có ít nhất một hồ sơ senior vào thẳng `/family-home`; chưa có hồ sơ
+  mới vào `/create-senior`. Đăng nhập tài khoản khác không sử dụng hồ sơ của tài khoản trước.
+  Senior vào `/senior-home` và được chuyển sang nhập mã nếu chưa liên kết; Điều dưỡng
+  giữ thông báo đăng nhập thành công trên màn đăng nhập hiện có.
+- Tạo thành công thay route bằng `/add-more-senior?created=1`, hiện “Đã tạo hồ sơ người thân”
+  và bản ghi vừa tạo. Quay lại/Để sau đến trang chủ; thêm hồ sơ khác qua **Gia đình**
+  là hành động chủ động của người dùng, vẫn được phép khi đã có hồ sơ.
 
 ## Session và service
 
@@ -76,7 +76,7 @@ npx expo-doctor
 npx expo export --platform web --platform android --output-dir .expo/senior-feature-build
 ```
 
-Các kiểm thử domain kiểm tra vai trò/cờ demo, đăng nhập lại, snapshot OTP, trường
+Các kiểm thử domain kiểm tra vai trò/số hồ sơ, đăng nhập lại, snapshot OTP, trường
 bắt buộc, năm sinh không có tuổi tối thiểu, bệnh nền loại trừ/trùng lặp, chủ sở
 hữu, chống giả owner ID, submit đồng thời, phiên thay đổi và sao chép dữ liệu.
 
@@ -86,6 +86,7 @@ Kiểm thử trình duyệt sử dụng Python Playwright có Chromium. Chạy E
 npx expo start --port 8083
 # Trong terminal khác, với Python Playwright và Chromium đã được cài:
 python tests/senior-ui.smoke.py --base-url http://localhost:8083
+python tests/family-login-ui.smoke.py --base-url http://localhost:8083
 ```
 
 Script dùng dữ liệu giả; ảnh kiểm thử và screenshot nằm trong `.expo/senior-ui-tests`

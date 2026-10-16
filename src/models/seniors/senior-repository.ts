@@ -5,6 +5,8 @@ import type { CreateSeniorInput, Senior } from './types';
 
 export interface SeniorRepository {
   list(): readonly Senior[];
+  // Internal demo service port for resolving an issued link code; not a public profile listing.
+  getByIdForLinking(id: string): Senior | undefined;
   create(input: CreateSeniorInput): Promise<Senior>;
 }
 
@@ -60,6 +62,10 @@ export function createDemoSeniorRepository(getCurrentUser: () => AuthUser | null
   }
 
   return {
+    getByIdForLinking(id) {
+      const profile = profiles.find((item) => item.id === id);
+      return profile ? copySenior(profile) : undefined;
+    },
     list() {
       const user = getCurrentUser();
       if (!user || user.role !== 'family') return [];

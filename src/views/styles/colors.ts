@@ -91,6 +91,22 @@ export const PrimaryColors = {
   ring: 'rgba(15, 118, 110, 0.2)',
 } as const;
 
+export const HealthColors = {
+  hero: '#075D55',
+  heroTextSecondary: '#D8F2EC',
+  heroAccent: '#86DCC6',
+  heroHeartStroke: 'rgba(255,255,255,0.08)',
+  heroHeartFill: 'rgba(255,255,255,0.04)',
+  heroRule: 'rgba(255,255,255,0.15)',
+  heroDivider: 'rgba(255,255,255,0.2)',
+  heartRate: { accent: '#B45365', surface: '#FFF1F3' },
+  bloodGlucose: { accent: '#A45D16', surface: '#FFF8ED' },
+  weight: { accent: '#5E63A9', surface: '#F2F2FF' },
+  readingAction: { surface: '#ECF8F3', border: '#DDEFE6' },
+  symptomAction: { surface: '#FFF5EB', border: '#F8E8D7' },
+  modalOverlay: 'rgba(17,28,45,0.42)',
+} as const;
+
 export const StatusColors = {
   success: {
     surface: '#ECFDF5', selected: '#D1FAE5', border: '#A7F3D0',

@@ -7,7 +7,7 @@ import { Platform } from 'react-native';
 
 import { Colors } from './colors';
 
-export { AppColors, Colors, OverlayColors, PrimaryColors, StatusColors } from './colors';
+export { AppColors, Colors, HealthColors, OverlayColors, PrimaryColors, StatusColors } from './colors';
 export type { AppPalette, ThemeColor } from './colors';
 
 export const Fonts = Platform.select({

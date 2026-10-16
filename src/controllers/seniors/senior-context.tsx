@@ -7,6 +7,8 @@ import type { CreateSeniorInput, Senior } from '@/models/seniors/types';
 
 type SeniorContextValue = {
   profiles: readonly Senior[];
+  getProfiles: () => readonly Senior[];
+  getProfileForLinking: (id: string) => Senior | undefined;
   createSenior: (input: CreateSeniorInput) => Promise<Senior>;
 };
 
@@ -16,6 +18,8 @@ export function SeniorProvider({ children }: React.PropsWithChildren) {
   const { getCurrentUser } = useAuth();
   const [repository] = useState(() => createDemoSeniorRepository(getCurrentUser));
   const [, setRevision] = useState(0);
+  const getProfiles = useCallback(() => repository.list(), [repository]);
+  const getProfileForLinking = useCallback((id: string) => repository.getByIdForLinking(id), [repository]);
 
   const createSenior = useCallback(
     async (input: CreateSeniorInput) => {
@@ -27,7 +31,7 @@ export function SeniorProvider({ children }: React.PropsWithChildren) {
   );
 
   // Auth context changes re-render the provider; completed writes do so above.
-  const value = { profiles: repository.list(), createSenior };
+  const value = { profiles: repository.list(), getProfiles, getProfileForLinking, createSenior };
 
   return <SeniorContext.Provider value={value}>{children}</SeniorContext.Provider>;
 }

@@ -132,7 +132,7 @@ export function useCreateSeniorController({
       await createSenior(normalizeSeniorForm(values));
       profileCreated.current = true;
       if (mounted.current) {
-        router.replace({ pathname: '/family-home', params: { created: '1' } });
+        router.replace({ pathname: '/add-more-senior', params: { created: '1' } });
       }
     } catch {
       if (mounted.current) {

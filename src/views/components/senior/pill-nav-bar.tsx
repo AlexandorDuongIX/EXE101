@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, ViewStyle, type ViewProps } from 'react-native';
 import Animated, { type AnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/views/components/ui/text';
@@ -24,13 +24,16 @@ export interface PillNavBarProps {
   onTabPress: (tabKey: string) => void;
   /** Animated style from useScrollVisibility hook (controls show/hide) */
   animatedStyle?: AnimatedStyle<ViewStyle>;
+  /** Hide interaction and accessibility while the bar is off-screen. */
+  hidden?: boolean;
+  onLayout?: ViewProps['onLayout'];
 }
 
 const DEFAULT_TABS: PillNavTab[] = [
   { key: 'trang-chu', label: 'Trang chủ', icon: 'home' },
   { key: 'thuoc', label: 'Thuốc', icon: 'medication' },
   { key: 'suc-khoe', label: 'Sức khỏe', icon: 'health' },
-  { key: 'lich', label: 'Lịch', icon: 'calendar' },
+  { key: 'ai-assistant', label: 'Trợ lý AI', icon: 'ai-assistant' },
   { key: 'gia-dinh', label: 'Gia đình', icon: 'group' },
 ];
 
@@ -39,30 +42,39 @@ export const PillNavBar: React.FC<PillNavBarProps> = ({
   activeTab,
   onTabPress,
   animatedStyle,
+  hidden = false,
+  onLayout,
 }) => {
   const insets = useSafeAreaInsets();
 
   return (
     <Animated.View
+      testID="bottom-navigation"
       style={[
         styles.outer,
         { paddingBottom: Math.max(insets.bottom, 12) },
         animatedStyle,
       ]}
-      pointerEvents="box-none"
+      onLayout={onLayout}
+      pointerEvents={hidden ? 'none' : 'box-none'}
+      accessibilityElementsHidden={hidden}
+      importantForAccessibility={hidden ? 'no-hide-descendants' : 'auto'}
+      aria-hidden={hidden}
     >
-      <View style={styles.pill}>
+      <View style={styles.pill} accessibilityRole="tablist">
         {tabs.map((tab) => {
           const isActive = tab.key === activeTab;
           return (
             <TouchableOpacity
               key={tab.key}
+              disabled={hidden}
               activeOpacity={0.75}
               onPress={() => onTabPress(tab.key)}
               style={styles.tabItem}
               accessibilityLabel={tab.label}
               accessibilityRole="tab"
-              accessibilityState={{ selected: isActive }}
+              accessibilityState={{ selected: isActive, disabled: hidden }}
+              aria-selected={isActive}
             >
               {isActive ? (
                 <View style={styles.activeIndicator}>
@@ -85,6 +97,7 @@ export const PillNavBar: React.FC<PillNavBarProps> = ({
                 semiBold={!isActive}
                 color={isActive ? AppColors.action : AppColors.textSecondary}
                 style={styles.tabLabel}
+                numberOfLines={1}
               >
                 {tab.label}
               </Text>
@@ -125,11 +138,13 @@ const styles = StyleSheet.create({
     borderColor: OverlayColors.separatorSubtle,
   },
   tabItem: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 4,
-    paddingHorizontal: 6,
-    minWidth: 54,
+    paddingHorizontal: 2,
+    minWidth: 0,
+    minHeight: 52,
     gap: 2,
   },
   activeIndicator: {
@@ -142,6 +157,7 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontSize: 11,
+    lineHeight: 16,
     letterSpacing: -0.1,
   },
 });

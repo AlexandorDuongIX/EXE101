@@ -1,40 +1,9 @@
-import { useMemo, useState } from 'react';
-import { Alert, Linking } from 'react-native';
-
-import { getVietnameseDate, SENIOR_HOME_DEMO } from '@/models/seniors/senior-home-model';
+import { useSeniorLink } from '@/controllers/linking/link-context';
 
 export function useSeniorHomeController() {
-  const [activeTab, setActiveTab] = useState('trang-chu');
-  const dateStr = useMemo(() => getVietnameseDate(), []);
-
-  // ── Handlers ──
-  const handleSOS = () => {
-    Alert.alert(
-      'GỌI KHẨN CẤP',
-      'Gọi ngay cho Con Hoàng hoặc Cứu thương 115?',
-      [
-        { text: 'Con Hoàng', onPress: () => Linking.openURL('tel:0901234567') },
-        { text: 'Cứu thương 115', style: 'destructive', onPress: () => Linking.openURL('tel:115') },
-        { text: 'Hủy', style: 'cancel' },
-      ],
-    );
-  };
-
-  const handleVoiceRead = () => {
-    Alert.alert('Đọc to', 'Đang đọc to nội dung trang cho Bác…');
-  };
-
-  const handleMedConfirm = () => {
-    Alert.alert('Ghi nhận', 'Đã ghi nhận Bác đã uống thuốc huyết áp Amlodipine. Bác nhớ nghỉ ngơi trưa nhé!');
-  };
-
-  return {
-    dashboard: SENIOR_HOME_DEMO,
-    activeTab,
-    setActiveTab,
-    dateStr,
-    handleSOS,
-    handleVoiceRead,
-    handleMedConfirm,
-  };
+  const { linkedSenior } = useSeniorLink();
+  return { dashboard: { user: {
+    name: linkedSenior?.fullName ?? '',
+    initials: linkedSenior?.fullName.trim().split(/\s+/).slice(-2).map((part) => part[0]).join('').toUpperCase(),
+  } } };
 }

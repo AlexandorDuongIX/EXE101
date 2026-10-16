@@ -3,7 +3,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { DEMO_FORCE_CREATE_SENIOR_AFTER_CHILD_LOGIN } from '../src/config/demo-flags';
 import {
   authenticateDemoLogin,
   createDemoOtpChallenge,
@@ -38,26 +37,31 @@ async function demoUser(role: UserRole = 'family', phone = '0912345678'): Promis
   return authenticateDemoLogin({ phone, role, otpCode: '123456' });
 }
 
-test('every successful Child login routes to creation when the demo flag is enabled', async () => {
-  assert.equal(typeof DEMO_FORCE_CREATE_SENIOR_AFTER_CHILD_LOGIN, 'boolean');
+test('family login skips creation only when the current account already has a senior profile', async () => {
   const firstLogin = await demoUser();
-  const repository = createDemoSeniorRepository(() => firstLogin);
+  let currentUser: AuthUser | null = firstLogin;
+  const repository = createDemoSeniorRepository(() => currentUser);
+  assert.equal(getLoginDestination(firstLogin, repository.list().length > 0), '/create-senior');
   await repository.create(validInput());
+  assert.equal(getLoginDestination(firstLogin, repository.list().length > 0), '/family-home');
+
+  currentUser = null;
   const secondLogin = await demoUser();
+  currentUser = secondLogin;
   assert.equal(firstLogin.id, secondLogin.id);
-  assert.equal(getLoginDestination(firstLogin, true), '/create-senior');
-  assert.equal(getLoginDestination(secondLogin, true), '/create-senior');
-  assert.equal(
-    getLoginDestination(secondLogin),
-    DEMO_FORCE_CREATE_SENIOR_AFTER_CHILD_LOGIN ? '/create-senior' : '/family-home'
-  );
-  assert.equal(getLoginDestination(secondLogin, false), '/family-home');
+  assert.equal(getLoginDestination(secondLogin, repository.list().length > 0), '/family-home');
+
+  const otherAccount = await demoUser('family', '0987654321');
+  currentUser = otherAccount;
+  assert.equal(getLoginDestination(otherAccount, repository.list().length > 0), '/create-senior');
+  currentUser = secondLogin;
+  assert.equal(getLoginDestination(secondLogin, repository.list().length > 0), '/family-home');
 });
 
 test('demo routing preserves the destination of every other existing role', async () => {
-  for (const forceCreate of [true, false]) {
-    assert.equal(getLoginDestination(await demoUser('senior'), forceCreate), '/senior-home');
-    assert.equal(getLoginDestination(await demoUser('caregiver'), forceCreate), null);
+  for (const hasSeniorProfile of [true, false]) {
+    assert.equal(getLoginDestination(await demoUser('senior'), hasSeniorProfile), '/senior-home');
+    assert.equal(getLoginDestination(await demoUser('caregiver'), hasSeniorProfile), null);
   }
 });
 

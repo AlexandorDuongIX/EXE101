@@ -24,6 +24,7 @@ import {
   Siren,
   TriangleAlert,
   HeartPulse,
+  BotMessageSquare,
 } from 'lucide-react-native';
 
 const ICON_MAP = {
@@ -47,6 +48,7 @@ const ICON_MAP = {
   'e911': Siren,
   'sos': TriangleAlert,
   'cardiology': HeartPulse,
+  'ai-assistant': BotMessageSquare,
 } as const;
 
 export type SeniorIconName = keyof typeof ICON_MAP;

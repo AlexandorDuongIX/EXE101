@@ -1,83 +1,72 @@
-/**
- * Hook to control visibility of a floating element (e.g., PillNavBar)
- * based on scroll behavior:
- * - Hides immediately when user begins scrolling
- * - Shows with spring animation after a delay when scrolling stops
- */
-import { useRef, useCallback } from 'react';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-} from 'react-native-reanimated';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 interface UseScrollVisibilityOptions {
-  /** Delay in ms before showing the element after scroll ends (default: 700) */
   showDelay?: number;
-  /** How far to translate the element offscreen in px (default: 120) */
   hideDistance?: number;
 }
 
-export function useScrollVisibility(options: UseScrollVisibilityOptions = {}) {
-  const { showDelay = 700, hideDistance = 120 } = options;
-
-  const translateY = useSharedValue<number>(0);
+/** Hide while content moves, then reveal after a full idle interval. */
+export function useScrollVisibility({ showDelay = 300, hideDistance = 120 }: UseScrollVisibilityOptions = {}) {
+  const translateY = useSharedValue(0);
+  const [isHidden, setIsHidden] = useState(false);
+  const hiddenRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const show = useCallback(() => {
-    translateY.set(withSpring(0, {
-      damping: 18,
-      stiffness: 140,
-      mass: 0.8,
-    }));
-  }, [translateY]);
-
-  const hide = useCallback(() => {
-    translateY.set(withTiming(hideDistance, { duration: 250 }));
-  }, [translateY, hideDistance]);
-
-  const scheduleShow = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(show, showDelay);
-  }, [show, showDelay]);
-
   const clearTimer = useCallback(() => {
-    if (timerRef.current) {
+    if (timerRef.current !== null) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
   }, []);
 
-  /** Attach to ScrollView's onScrollBeginDrag */
-  const onScrollBeginDrag = useCallback(() => {
+  const show = useCallback(() => {
     clearTimer();
+    hiddenRef.current = false;
+    setIsHidden(false);
+    translateY.set(withTiming(0, { duration: 220 }));
+  }, [clearTimer, translateY]);
+
+  const hide = useCallback(() => {
+    clearTimer();
+    if (!hiddenRef.current) {
+      hiddenRef.current = true;
+      setIsHidden(true);
+      translateY.set(withTiming(hideDistance, { duration: 180 }));
+    }
+  }, [clearTimer, hideDistance, translateY]);
+
+  const scheduleShow = useCallback(() => {
+    clearTimer();
+    timerRef.current = setTimeout(show, showDelay);
+  }, [clearTimer, show, showDelay]);
+
+  const onScroll = useCallback(() => {
     hide();
-  }, [clearTimer, hide]);
-
-  /** Attach to ScrollView's onScrollEndDrag */
-  const onScrollEndDrag = useCallback(() => {
     scheduleShow();
-  }, [scheduleShow]);
+  }, [hide, scheduleShow]);
 
-  /** Attach to ScrollView's onMomentumScrollEnd */
-  const onMomentumScrollEnd = useCallback(() => {
-    scheduleShow();
-  }, [scheduleShow]);
+  useEffect(() => clearTimer, [clearTimer]);
 
-  /** Animated style to apply to the floating element */
+  // Keep the whole bar off-screen if its safe area or text size changes.
+  useEffect(() => {
+    if (hiddenRef.current) {
+      translateY.set(withTiming(hideDistance, { duration: 180 }));
+    }
+  }, [hideDistance, translateY]);
+
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.get() }],
   }));
 
   return {
     animatedStyle,
-    onScrollBeginDrag,
-    onScrollEndDrag,
-    onMomentumScrollEnd,
-    /** Imperatively show the element */
+    isHidden,
+    onScroll,
+    onScrollBeginDrag: hide,
+    onScrollEndDrag: scheduleShow,
+    onMomentumScrollBegin: hide,
+    onMomentumScrollEnd: scheduleShow,
     show,
-    /** Imperatively hide the element */
-    hide,
   };
 }
